@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  RHEL, Ubuntu and Windows 2012 Lab Test Instances by Levon Becker
+  v20160504-1500
+Parameters:
+  DefaultSG:
+    Description: Enter the Sg your want
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Default: sg-06c8faff47438fbbf
+  Ec2KeyPair:
+    Description: Enter an existing EC2 KeyPair. Default is MyEC2Key
+    Type: String
+    Default: cosy-poc
+  VPC:
+    Description: Select VPC.
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: Subnet to Deploy
+    Type: 'AWS::EC2::Subnet::Id'
+  InstanceTypeRHEL7:
+    Description: Select Instance Type for RHEL
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - c4.4xlarge
+Mappings:
+  RegionMap:
+    ap-southeast-2:
+      AMI: ami-05067171f4230ac41
+Resources:
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType:
+        Ref: InstanceTypeRHEL7
+      ImageId:
+        'Fn::FindInMap':
+          - RegionMap
+          - Ref: 'AWS::Region'
+          - AMI
+      SubnetId:
+        Ref: Subnet
+      SecurityGroupIds:
+        Ref: DefaultSG
+      KeyName:
+        Ref: Ec2KeyPair
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 1500
+            VolumeType: gp2
+  IPAddress:
+    Type: 'AWS::EC2::EIP'
+  IPAssoc:
+    Type: 'AWS::EC2::EIPAssociation'
+    Properties:
+      InstanceId:
+        Ref: EC2Instance
+      EIP:
+        Ref: IPAddress
+        
+  CPUAlarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmDescription: CPU alarm for my instance
+    AlarmActions:
+    - Ref: "cosy-migration"
+    MetricName: CPUUtilization
+    Namespace: AWS/EC2
+    Statistic: Average
+    Period: '60'
+    EvaluationPeriods: '3'
+    Threshold: '90'
+    ComparisonOperator: GreaterThanThreshold
+    Dimensions:
+    - Name: InstanceId
+      Value:
+        Ref: "i-085689fabbfa3279c
+"
