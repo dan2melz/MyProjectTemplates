@@ -1,0 +1,31 @@
+import boto3
+
+cloudwatch = boto3.client('cloudwatch')
+
+ec2_instances = [
+    'i-07a8ff0677face3c0',
+    'i-0df8e7ba4cb986ea3',
+    'i-12345093833243295'
+]
+
+for ec2_instance in ec2_instances:
+    cloudwatch.put_metric_alarm(
+        AlarmName='Web_Server_CPU_Utilization_%s' % ec2_instance,
+        ComparisonOperator='GreaterThanThreshold',
+        EvaluationPeriods=2,
+        MetricName='CPUUtilization',
+        Namespace='AWS/EC2',
+        Period=60,
+        Statistic='Average',
+        Threshold=70.0,
+        ActionsEnabled=False,
+        AlarmDescription='Alarm when server CPU exceeds 70%',
+        AlarmActions=['arn:aws:sns:ap-southeast-2:055990842036:test'],
+        Dimensions=[
+            {
+              'Name': 'InstanceId',
+              'Value': ec2_instance
+            },
+        ],
+        Unit='Seconds'
+    )
