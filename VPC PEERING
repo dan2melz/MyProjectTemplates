@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ProdVPC:
+    Description: lorem ipsum
+    Type: String
+  ReccVPC:
+    Description: lorem ipsum
+    Type: String
+  ReccPublicRouteTable:
+    Description: lorem ipsum
+    Type: String
+  ProdRouteTable:
+    Description: lorem ipsum
+    Type: String
+
+Resources:
+
+  SimpleVPCPeering:
+   Type: AWS::EC2::VPCPeeringConnection
+   Properties:
+    PeerVpcId: !Ref ProdVPC
+    VpcId: !Ref  ReccVPC
+
+  QAPeeringRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 172.34.0.0/16
+      RouteTableId:
+        Ref:  ReccPublicRouteTable
+      VpcPeeringConnectionId:
+        Ref: SimpleVPCPeering
+
+  ProdPeeringRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 172.32.0.0/16
+      RouteTableId:
+        Ref: ProdRouteTable
+      VpcPeeringConnectionId:
+        Ref: SimpleVPCPeering
